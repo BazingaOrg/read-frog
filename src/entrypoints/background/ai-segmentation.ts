@@ -67,9 +67,6 @@ export async function runAiSegmentSubtitles(data: AiSegmentSubtitlesData): Promi
   try {
     const segmentedVtt = await generateTextForProviderRef({
       providerRef,
-      // Its own route, not videoSubtitles: segmentation emits a whole WebVTT
-      // block and needs the wider output budget that route reserves.
-      hostedFeature: "videoSubtitlesSegmentation",
       instructions: systemPrompt,
       prompt,
       requestId: getRandomUUID(),

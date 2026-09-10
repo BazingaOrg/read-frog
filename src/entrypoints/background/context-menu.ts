@@ -9,7 +9,6 @@ import {
   parseTabIdFromStorageKey,
   TRANSLATION_STATE_KEY_PREFIX,
 } from "@/utils/constants/storage-keys"
-import { getSelectionToolbarActions } from "@/utils/custom-actions"
 import { i18n } from "@/utils/i18n"
 import { sendMessage } from "@/utils/message"
 import { ensureInitializedConfig } from "./config"
@@ -18,11 +17,6 @@ import { getPageTranslationEnabled, setPageTranslationEnabled } from "./page-tra
 export const MENU_ID_TRANSLATE = "read-frog-translate"
 export const MENU_ID_SELECTION_TRANSLATE = "read-frog-selection-translate"
 export const MENU_ID_SELECTION_READ_ALOUD = "read-frog-selection-read-aloud"
-export const MENU_ID_SELECTION_CUSTOM_ACTION_PREFIX = "read-frog-selection-custom-action:"
-
-function getSelectionCustomActionMenuId(actionId: string) {
-  return `${MENU_ID_SELECTION_CUSTOM_ACTION_PREFIX}${actionId}`
-}
 
 /**
  * Register all context menu event listeners synchronously
@@ -97,9 +91,6 @@ async function updateContextMenuItems(config: Config) {
   await browser.contextMenus.removeAll()
 
   const { enabled: translateEnabled } = config.contextMenu
-  const enabledCustomActions = getSelectionToolbarActions(config.selectionToolbar).filter(
-    (action) => action.enabled !== false,
-  )
 
   if (translateEnabled) {
     browser.contextMenus.create({
@@ -119,16 +110,6 @@ async function updateContextMenuItems(config: Config) {
       title: i18n.t("contextMenu.readAloudSelection"),
       contexts: ["selection"],
     })
-
-    if (enabledCustomActions.length > 0) {
-      enabledCustomActions.forEach((action) => {
-        browser.contextMenus.create({
-          id: getSelectionCustomActionMenuId(action.id),
-          title: action.name,
-          contexts: ["selection"],
-        })
-      })
-    }
   }
 
   // Update translate menu title for current tab
@@ -190,18 +171,6 @@ async function handleContextMenuClick(
   if (info.menuItemId === MENU_ID_SELECTION_READ_ALOUD) {
     await handleSelectionReadAloudClick(info, tab.id)
     return
-  }
-
-  if (
-    typeof info.menuItemId === "string" &&
-    info.menuItemId.startsWith(MENU_ID_SELECTION_CUSTOM_ACTION_PREFIX)
-  ) {
-    const actionId = info.menuItemId.slice(MENU_ID_SELECTION_CUSTOM_ACTION_PREFIX.length)
-    if (!actionId) {
-      return
-    }
-
-    await handleSelectionCustomActionClick(info, tab.id, actionId)
   }
 }
 
@@ -268,26 +237,4 @@ async function handleSelectionReadAloudClick(
   const target = typeof info.frameId === "number" ? { tabId, frameId: info.frameId } : tabId
 
   void sendMessage("readAloudSelectionFromContextMenu", { selectionText }, target)
-}
-
-async function handleSelectionCustomActionClick(
-  info: Browser.contextMenus.OnClickData,
-  tabId: number,
-  actionId: string,
-) {
-  const selectionText = info.selectionText?.trim()
-  if (!selectionText) {
-    return
-  }
-
-  const target = typeof info.frameId === "number" ? { tabId, frameId: info.frameId } : tabId
-
-  void sendMessage(
-    "openSelectionCustomActionFromContextMenu",
-    {
-      actionId,
-      selectionText,
-    },
-    target,
-  )
 }

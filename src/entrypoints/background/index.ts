@@ -1,7 +1,6 @@
 import "@/utils/zod-config"
 import type { Config, UiLanguage } from "@/types/config/config"
 import { browser, defineBackground } from "#imports"
-import { env } from "@/env"
 import { storageAdapter } from "@/utils/atoms/storage-adapter"
 import { selectFreshTranslateProviders } from "@/utils/config/default-translate-provider"
 import { CONFIG_STORAGE_KEY } from "@/utils/constants/config"
@@ -9,9 +8,7 @@ import { initI18n, setUiLanguage } from "@/utils/i18n"
 import { logger } from "@/utils/logger"
 import { onMessage } from "@/utils/message"
 import { openOptionsPage } from "@/utils/navigation"
-import { SessionCacheGroupRegistry } from "@/utils/session-cache/session-cache-group-registry"
 import { runAiSegmentSubtitles } from "./ai-segmentation"
-import { setupAnalyticsMessageHandlers } from "./analytics"
 import { dispatchBackgroundStreamPort } from "./background-stream"
 import { initializeActionIcons, registerActionIconListeners } from "./browser-action-icon"
 import { ensureInitializedConfig, isFreshInstalledConfig } from "./config"
@@ -24,33 +21,22 @@ import {
   setUpDatabaseCleanup,
 } from "./db-cleanup"
 import { setupEdgeTTSMessageHandlers } from "./edge-tts"
-import { setupHostedAiStatusHandler } from "./hosted-ai-status"
 import { setupIframeInjection } from "./iframe-injection"
 import { setupLLMGenerateTextMessageHandlers } from "./llm-generate-text"
 import { initMockData } from "./mock-data"
-import { newUserGuide } from "./new-user-guide"
-import { setupNotebasePendingSaveProcessor } from "./notebase-pending-save"
 import { proxyFetch } from "./proxy-fetch"
 import { setupSidePanelMessageHandler } from "./side-panel"
 import { setUpSubtitlesTranslationQueue, setUpWebPageTranslationQueue } from "./translation-queues"
 import { translationMessage } from "./translation-signal"
 import { setupTTSPlaybackMessageHandlers } from "./tts-playback"
-import { setupUninstallSurvey } from "./uninstall-survey"
 
 export default defineBackground({
   type: "module",
   main: () => {
     logger.info("Hello background!", { id: browser.runtime.id })
 
-    browser.runtime.onInstalled.addListener(async (details) => {
+    browser.runtime.onInstalled.addListener(async () => {
       await ensureInitializedConfig()
-
-      // Open tutorial page when extension is installed
-      if (details.reason === "install") {
-        await browser.tabs.create({
-          url: `${env.WXT_WEBSITE_URL}/guide/step-1`,
-        })
-      }
 
       // Deliberately last: probing Google Translate can hang for seconds on networks that
       // block it, and nothing above should wait for that. Awaiting inside the listener
@@ -61,12 +47,6 @@ export default defineBackground({
       // update deserves the same provider selection a fresh install gets.
       if (await isFreshInstalledConfig()) {
         await selectFreshTranslateProviders()
-      }
-
-      // Clear blog cache on extension update to fetch latest blog posts
-      if (details.reason === "update") {
-        logger.info("[Background] Extension updated, clearing blog cache")
-        await SessionCacheGroupRegistry.removeCacheGroup("blog-fetch")
       }
     })
 
@@ -109,8 +89,6 @@ export default defineBackground({
       await cleanupAllAiSegmentationCache()
     })
 
-    newUserGuide()
-    setupAnalyticsMessageHandlers()
     translationMessage()
     registerActionIconListeners()
 
@@ -139,8 +117,6 @@ export default defineBackground({
     })()
 
     proxyFetch()
-    setupHostedAiStatusHandler()
-    setupNotebasePendingSaveProcessor(() => backgroundReady)
     setupEdgeTTSMessageHandlers()
     setupLLMGenerateTextMessageHandlers()
     setupTTSPlaybackMessageHandlers()
@@ -150,26 +126,21 @@ export default defineBackground({
     setupIframeInjection()
 
     // i18n bootstrap for the non-React background context. Runs after the synchronous
-    // listener registration above (MV3 requires listeners before the first await). The
-    // context menu and the uninstall-survey URL both resolve i18n.t at registration time,
-    // so they must be created AFTER initI18n or they freeze in the wrong language.
+    // listener registration above (MV3 requires listeners before the first await).
     void (async () => {
       await backgroundReady
       void initializeContextMenu()
-      await setupUninstallSurvey()
     })()
 
     // Keep background-resolved strings in the selected language when it changes.
     // The context menu re-creates itself via its own config watcher
-    // (registerContextMenuListeners), so here we only drive the i18next singleton and
-    // re-set the frozen (localized) uninstall-survey URL.
+    // (registerContextMenuListeners), so here we only drive the i18next singleton.
     storageAdapter.watch<Config>(CONFIG_STORAGE_KEY, (newConfig) => {
       void (async () => {
         await backgroundReady
         if (newConfig.uiLanguage === currentUiLanguage) return
         currentUiLanguage = newConfig.uiLanguage
         await setUiLanguage(newConfig.uiLanguage)
-        await setupUninstallSurvey()
       })()
     })
   },
