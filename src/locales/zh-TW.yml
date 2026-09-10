@@ -143,6 +143,7 @@ options:
         pageTranslation: 網頁翻譯
         customAction: 自訂 AI 指令
         noteSuggestion: 猜你想存
+        vocabulary: 詞彙解析
         selectionTranslation: 選取文字翻譯
         videoSubtitles: 影片字幕
         inputTranslation: 輸入翻譯
@@ -282,18 +283,21 @@ options:
     featureProviders:
       title: 功能提供者
       description: 為每個功能選擇使用的提供者
+      placeholder: 選擇提供者
       features:
         pageTranslation: 網頁翻譯
         selectionTranslation: 選取文字翻譯
         inputTranslation: 輸入翻譯
         videoSubtitles: 影片字幕
         noteSuggestion: 猜你想存
+        vocabulary: 詞彙解析
       descriptions:
         pageTranslation: 翻譯整個網頁，雙語對照或直接取代原文。
         selectionTranslation: 透過劃詞工具列翻譯你選取的文字。
         inputTranslation: 在送出前翻譯你寫在輸入框裡的內容。
         videoSubtitles: 翻譯影片播放器中隨播放出現的字幕。
         noteSuggestion: 選取文字翻譯後，推薦值得存入筆記庫的詞條。
+        vocabulary: 為本地詞庫中的單字產生語境釋義。
     languageDetection:
       title: 語言偵測
       description: 影響自動翻譯語言偵測和朗讀語音選擇的準確性。

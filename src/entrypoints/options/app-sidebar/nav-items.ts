@@ -3,15 +3,12 @@ export const ROUTE_DEFS = [
   { path: "/preference" },
   { path: "/shortcuts" },
   { path: "/api-providers" },
-  { path: "/custom-actions" },
   { path: "/page-translation" },
   { path: "/video-subtitles" },
   { path: "/floating-button" },
   { path: "/selection-toolbar" },
   { path: "/context-menu" },
-  { path: "/input-translation" },
   { path: "/tts" },
-  { path: "/help-and-community" },
 
   // Detail pages drilled into from a `ConfigNavItem`. They own no sidebar entry — the
   // sidebar lists its links itself — but route exactly like any other page.

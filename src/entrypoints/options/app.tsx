@@ -14,9 +14,6 @@ const ShortcutsPage = lazy(() =>
 const ApiProvidersPage = lazy(() =>
   import("./pages/api-providers").then((module) => ({ default: module.ApiProvidersPage })),
 )
-const CustomActionsPage = lazy(() =>
-  import("./pages/custom-actions").then((module) => ({ default: module.CustomActionsPage })),
-)
 const TranslationPage = lazy(() =>
   import("./pages/translation").then((module) => ({ default: module.TranslationPage })),
 )
@@ -32,14 +29,8 @@ const SelectionToolbarPage = lazy(() =>
 const ContextMenuPage = lazy(() =>
   import("./pages/context-menu").then((module) => ({ default: module.ContextMenuPage })),
 )
-const InputTranslationPage = lazy(() =>
-  import("./pages/input-translation").then((module) => ({ default: module.InputTranslationPage })),
-)
 const TextToSpeechPage = lazy(() =>
   import("./pages/text-to-speech").then((module) => ({ default: module.TextToSpeechPage })),
-)
-const HelpAndCommunityPage = lazy(() =>
-  import("./pages/help-and-community").then((module) => ({ default: module.HelpAndCommunityPage })),
 )
 const CustomCssPage = lazy(() =>
   import("./pages/translation/translation-style/custom-css").then((module) => ({
@@ -112,15 +103,12 @@ const ROUTE_COMPONENTS: Record<RoutePath, ComponentType> = {
   "/preference": PreferencePage,
   "/shortcuts": ShortcutsPage,
   "/api-providers": ApiProvidersPage,
-  "/custom-actions": CustomActionsPage,
   "/page-translation": TranslationPage,
   "/video-subtitles": VideoSubtitlesPage,
   "/floating-button": FloatingButtonPage,
   "/selection-toolbar": SelectionToolbarPage,
   "/context-menu": ContextMenuPage,
-  "/input-translation": InputTranslationPage,
   "/tts": TextToSpeechPage,
-  "/help-and-community": HelpAndCommunityPage,
   "/preference/config-backup": ConfigBackupPage,
   "/preference/extension-activation": ExtensionActivationPage,
   "/page-translation/custom-css": CustomCssPage,

@@ -143,6 +143,7 @@ options:
         pageTranslation: ページ翻訳
         customAction: カスタム AI アクション
         noteSuggestion: ノートの提案
+        vocabulary: 語彙解析
         selectionTranslation: 選択範囲の翻訳
         videoSubtitles: 動画字幕
         inputTranslation: 入力翻訳
@@ -281,18 +282,21 @@ options:
     featureProviders:
       title: 機能プロバイダー
       description: 各機能に使用するプロバイダーを選択
+      placeholder: プロバイダーを選択
       features:
         pageTranslation: ページ翻訳
         selectionTranslation: 選択ツールバー翻訳
         inputTranslation: 入力翻訳
         videoSubtitles: 動画字幕
         noteSuggestion: ノートの提案
+        vocabulary: 語彙解析
       descriptions:
         pageTranslation: ページ全体を対訳または置き換えで翻訳します。
         selectionTranslation: 選択ツールバーから、選択したテキストを翻訳します。
         inputTranslation: 入力欄に書いた文章を、送信する前に翻訳します。
         videoSubtitles: 動画プレーヤーに表示される字幕を翻訳します。
         noteSuggestion: 選択テキストを翻訳した後、Notebase に保存する価値のある単語を提案します。
+        vocabulary: ローカル語彙の文脈に沿った意味を生成します。
     languageDetection:
       title: 言語検出
       description: 自動翻訳の言語検出と読み上げの音声選択精度に影響します。

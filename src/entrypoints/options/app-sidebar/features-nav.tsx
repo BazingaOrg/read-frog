@@ -33,17 +33,6 @@ export function FeaturesNav() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              render={<Link to="/custom-actions" />}
-              isActive={pathname === "/custom-actions"}
-              tooltip={i18n.t("options.selectionToolbar.customActions.title")}
-            >
-              <Icon icon="tabler:sparkles" />
-              <span>{i18n.t("options.selectionToolbar.customActions.title")}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-
-          <SidebarMenuItem>
-            <SidebarMenuButton
               render={<Link to="/page-translation" />}
               isActive={pathname.startsWith("/page-translation")}
               tooltip={i18n.t("options.translation.title")}
@@ -61,17 +50,6 @@ export function FeaturesNav() {
             >
               <Icon icon="tabler:subtitles" />
               <span>{i18n.t("options.videoSubtitles.title")}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              render={<Link to="/input-translation" />}
-              isActive={pathname === "/input-translation"}
-              tooltip={i18n.t("options.inputTranslation.title")}
-            >
-              <Icon icon="tabler:keyboard" />
-              <span>{i18n.t("options.inputTranslation.title")}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
 

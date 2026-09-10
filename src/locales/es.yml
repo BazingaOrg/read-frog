@@ -143,6 +143,7 @@ options:
         pageTranslation: Traducción de página
         customAction: Acciones de IA personalizadas
         noteSuggestion: Sugerencias de notas
+        vocabulary: Análisis de vocabulario
         selectionTranslation: Traducción de la selección
         videoSubtitles: Subtítulos de video
         inputTranslation: Traducción de entrada
@@ -282,18 +283,21 @@ options:
     featureProviders:
       title: Proveedores de funciones
       description: Elige qué proveedor usar para cada función
+      placeholder: Selecciona un proveedor
       features:
         pageTranslation: Traducción de página
         selectionTranslation: Traducción de la barra de selección
         inputTranslation: Traducción de entrada
         videoSubtitles: Subtítulos de video
         noteSuggestion: Sugerencias de notas
+        vocabulary: Vocabulario
       descriptions:
         pageTranslation: Traduce la página completa en modo bilingüe o de reemplazo.
         selectionTranslation: Traduce el texto que seleccionas desde la barra de selección.
         inputTranslation: Traduce lo que escribes en un campo de texto antes de enviarlo.
         videoSubtitles: Traduce los subtítulos que aparecen en el reproductor de video.
         noteSuggestion: Sugiere palabras que vale la pena guardar en tu Notebase después de traducir una selección.
+        vocabulary: Genera significados contextuales para el vocabulario local.
     languageDetection:
       title: Detección de idioma
       description: Afecta la detección de idioma para traducción automática y la precisión de selección de voz.

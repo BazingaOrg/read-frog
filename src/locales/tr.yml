@@ -143,6 +143,7 @@ options:
         pageTranslation: Sayfa çevirisi
         customAction: Özel AI eylemleri
         noteSuggestion: Not önerileri
+        vocabulary: Kelime analizi
         selectionTranslation: Seçim çevirisi
         videoSubtitles: Video altyazıları
         inputTranslation: Giriş çevirisi
@@ -281,18 +282,21 @@ options:
     featureProviders:
       title: Özellik sağlayıcıları
       description: Her özellik için kullanılacak sağlayıcıyı seçin
+      placeholder: Bir sağlayıcı seçin
       features:
         pageTranslation: Sayfa çevirisi
         selectionTranslation: Seçim araç çubuğu çevirisi
         inputTranslation: Giriş çevirisi
         videoSubtitles: Video altyazıları
         noteSuggestion: Not önerileri
+        vocabulary: Sözcük çözümleme
       descriptions:
         pageTranslation: Sayfanın tamamını iki dilli ya da değiştirme modunda çevirir.
         selectionTranslation: Seçim araç çubuğundan, seçtiğiniz metni çevirir.
         inputTranslation: Bir metin kutusuna yazdıklarınızı göndermeden önce çevirir.
         videoSubtitles: Video oynatıcıda görünen altyazıları çevirir.
         noteSuggestion: Seçim çevirisinden sonra Notebase'inize kaydetmeye değer kelimeler önerir.
+        vocabulary: Yerel kelime dağarcığı için bağlamsal anlamlar üretir.
     languageDetection:
       title: Dil algılama
       description: Otomatik çeviri dil algılama ve Konuşma ses seçimi doğruluğunu etkiler.

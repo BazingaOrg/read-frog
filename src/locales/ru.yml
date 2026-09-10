@@ -143,6 +143,7 @@ options:
         pageTranslation: Перевод страницы
         customAction: Пользовательские AI-действия
         noteSuggestion: Подсказки для заметок
+        vocabulary: Анализ словаря
         selectionTranslation: Перевод выделения
         videoSubtitles: Субтитры видео
         inputTranslation: Перевод ввода
@@ -281,18 +282,21 @@ options:
     featureProviders:
       title: Провайдеры функций
       description: Выберите провайдера для каждой функции
+      placeholder: Выберите провайдера
       features:
         pageTranslation: Перевод страницы
         selectionTranslation: Перевод выделения
         inputTranslation: Перевод ввода
         videoSubtitles: Субтитры видео
         noteSuggestion: Подсказки для заметок
+        vocabulary: Разбор слов
       descriptions:
         pageTranslation: Переводит страницу целиком — в двуязычном режиме или с заменой оригинала.
         selectionTranslation: Переводит выделенный текст через панель выделения.
         inputTranslation: Переводит то, что вы набрали в поле ввода, перед отправкой.
         videoSubtitles: Переводит субтитры, которые появляются в видеоплеере.
         noteSuggestion: Предлагает слова, которые стоит сохранить в Notebase, после перевода выделенного текста.
+        vocabulary: Создает контекстные значения для локального словаря.
     languageDetection:
       title: Определение языка
       description: Влияет на точность определения языка для автоперевода и выбора голоса озвучивания.

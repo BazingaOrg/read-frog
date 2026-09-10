@@ -143,6 +143,7 @@ options:
         pageTranslation: 网页翻译
         customAction: 自定义 AI 指令
         noteSuggestion: 猜你想存
+        vocabulary: 词汇解析
         selectionTranslation: 划词翻译
         videoSubtitles: 视频字幕
         inputTranslation: 输入翻译
@@ -282,18 +283,21 @@ options:
     featureProviders:
       title: 功能提供商
       description: 为每个功能选择使用的提供商
+      placeholder: 选择提供商
       features:
         pageTranslation: 网页翻译
         selectionTranslation: 划词翻译
         inputTranslation: 输入翻译
         videoSubtitles: 视频字幕
         noteSuggestion: 猜你想存
+        vocabulary: 词汇解析
       descriptions:
         pageTranslation: 翻译整个网页，双语对照或直接替换原文。
         selectionTranslation: 通过划词工具栏翻译你选中的文本。
         inputTranslation: 在发送前翻译你写在输入框里的内容。
         videoSubtitles: 翻译视频播放器中随播放出现的字幕。
         noteSuggestion: 划词翻译后，推荐值得存入笔记库的词条。
+        vocabulary: 为本地词库中的单词生成语境释义。
     languageDetection:
       title: 语言检测
       description: 影响自动翻译语言检测和朗读语音选择的准确性。

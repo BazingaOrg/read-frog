@@ -56,13 +56,6 @@ export const SEARCH_ITEMS: SearchItem[] = [
     pageKey: "options.preference.title",
   },
   {
-    sectionId: "google-drive-sync",
-    route: "/preference",
-    titleKey: "options.preference.config.googleDrive.title",
-    descriptionKey: "options.preference.config.googleDrive.description",
-    pageKey: "options.preference.title",
-  },
-  {
     sectionId: "manual-config-sync",
     route: "/preference",
     titleKey: "options.preference.config.manualSync.title",
@@ -171,15 +164,6 @@ export const SEARCH_ITEMS: SearchItem[] = [
     titleKey: "options.apiProviders.aiContentAware.title",
     descriptionKey: "options.apiProviders.aiContentAware.description",
     pageKey: "options.apiProviders.title",
-  },
-
-  // Custom Actions page
-  {
-    sectionId: "custom-actions",
-    route: "/custom-actions",
-    titleKey: "options.selectionToolbar.customActions.title",
-    descriptionKey: "options.selectionToolbar.customActions.description",
-    pageKey: "options.selectionToolbar.customActions.title",
   },
 
   // Translation page
@@ -358,13 +342,6 @@ export const SEARCH_ITEMS: SearchItem[] = [
     pageKey: "options.selectionToolbar.title",
   },
   {
-    sectionId: "selection-toolbar-note-suggestion",
-    route: "/selection-toolbar",
-    titleKey: "options.selectionToolbar.actions.noteSuggestion.title",
-    descriptionKey: "options.selectionToolbar.actions.noteSuggestion.description",
-    pageKey: "options.selectionToolbar.title",
-  },
-  {
     sectionId: "selection-toolbar-opacity",
     route: "/selection-toolbar",
     titleKey: "options.selectionToolbar.display.opacity.title",
@@ -386,37 +363,6 @@ export const SEARCH_ITEMS: SearchItem[] = [
     titleKey: "options.contextMenu.enable.title",
     descriptionKey: "options.contextMenu.enable.description",
     pageKey: "options.contextMenu.title",
-  },
-
-  // Input Translation page
-  {
-    // Titled with the section, so the row that reads "Enable" is still findable on its own.
-    sectionId: "input-translation-trigger",
-    route: "/input-translation",
-    titleKey: "options.inputTranslation.trigger.title",
-    descriptionKey: "options.inputTranslation.trigger.enable.description",
-    pageKey: "options.inputTranslation.title",
-  },
-  {
-    sectionId: "input-translation-threshold",
-    route: "/input-translation",
-    titleKey: "options.inputTranslation.trigger.threshold.title",
-    descriptionKey: "options.inputTranslation.trigger.threshold.description",
-    pageKey: "options.inputTranslation.title",
-  },
-  {
-    sectionId: "input-translation-languages",
-    route: "/input-translation",
-    titleKey: "options.inputTranslation.languages.title",
-    descriptionKey: "options.inputTranslation.languages.pair.description",
-    pageKey: "options.inputTranslation.title",
-  },
-  {
-    sectionId: "input-translation-cycle",
-    route: "/input-translation",
-    titleKey: "options.inputTranslation.languages.cycle.title",
-    descriptionKey: "options.inputTranslation.languages.cycle.description",
-    pageKey: "options.inputTranslation.title",
   },
 
   // Video Subtitles page

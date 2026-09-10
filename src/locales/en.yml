@@ -143,6 +143,7 @@ options:
         pageTranslation: Page translation
         customAction: Custom AI Actions
         noteSuggestion: Note suggestions
+        vocabulary: Vocabulary analysis
         selectionTranslation: Selection translation
         videoSubtitles: Video subtitles
         inputTranslation: Input translation
@@ -282,18 +283,21 @@ options:
     featureProviders:
       title: Feature providers
       description: Choose which provider to use for each feature
+      placeholder: Select a provider
       features:
         pageTranslation: Page translation
         selectionTranslation: Selection toolbar translation
         inputTranslation: Input translation
         videoSubtitles: Video subtitles
         noteSuggestion: Note suggestions
+        vocabulary: Vocabulary
       descriptions:
         pageTranslation: Translates the whole page in bilingual or replace mode.
         selectionTranslation: Translates the text you select from the selection toolbar.
         inputTranslation: Translates what you type into an input box before you send it.
         videoSubtitles: Translates subtitles as they appear in a video player.
         noteSuggestion: Suggests words worth saving to your Notebase after a selection translation.
+        vocabulary: Generates contextual meanings for words stored in the local vocabulary.
     languageDetection:
       title: Language detection
       description: Affects auto-translate language detection and Speaking voice selection accuracy.

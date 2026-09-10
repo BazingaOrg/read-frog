@@ -143,6 +143,7 @@ options:
         pageTranslation: Dịch trang
         customAction: Hành động AI tùy chỉnh
         noteSuggestion: Gợi ý ghi chú
+        vocabulary: Phân tích từ vựng
         selectionTranslation: Dịch vùng chọn
         videoSubtitles: Phụ đề video
         inputTranslation: Dịch đầu vào
@@ -281,18 +282,21 @@ options:
     featureProviders:
       title: Nhà cung cấp tính năng
       description: Chọn nhà cung cấp sử dụng cho mỗi tính năng
+      placeholder: Chọn nhà cung cấp
       features:
         pageTranslation: Dịch trang
         selectionTranslation: Dịch thanh công cụ chọn
         inputTranslation: Dịch đầu vào
         videoSubtitles: Phụ đề video
         noteSuggestion: Gợi ý ghi chú
+        vocabulary: Phân tích từ vựng
       descriptions:
         pageTranslation: Dịch toàn bộ trang ở chế độ song ngữ hoặc thay thế bản gốc.
         selectionTranslation: Dịch đoạn văn bản bạn chọn từ thanh công cụ bôi đen.
         inputTranslation: Dịch nội dung bạn gõ trong ô nhập trước khi gửi.
         videoSubtitles: Dịch phụ đề hiện ra trong trình phát video.
         noteSuggestion: Gợi ý các từ đáng lưu vào Notebase sau khi dịch vùng chọn.
+        vocabulary: Tạo nghĩa theo ngữ cảnh cho kho từ vựng cục bộ.
     languageDetection:
       title: Phát hiện ngôn ngữ
       description: Ảnh hưởng đến phát hiện ngôn ngữ tự động dịch và độ chính xác chọn giọng nói.

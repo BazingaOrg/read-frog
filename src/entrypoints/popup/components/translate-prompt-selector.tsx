@@ -16,7 +16,7 @@ import { DEFAULT_TRANSLATE_PROMPT_ID } from "@/utils/constants/prompt"
 import { i18n } from "@/utils/i18n"
 
 export default function TranslatePromptSelector() {
-  const translateProviderRef = useAtomValue(featureProviderRefAtom("pageTranslation"))
+  const translateProviderRef = useAtomValue(featureProviderRefAtom("translation"))
   const [translateConfig, setTranslateConfig] = useAtom(configFieldsAtomMap.pageTranslation)
 
   if (
