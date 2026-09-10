@@ -97,6 +97,10 @@ describe("universalVideoAdapter", () => {
     mocks.getLocalConfig.mockResolvedValue({
       language: {},
       providersConfig: [],
+      providerAssignments: {
+        translationProviderId: null,
+        subtitleProviderId: null,
+      },
       videoSubtitles: {
         aiSegmentation: false,
         providerId: null,
