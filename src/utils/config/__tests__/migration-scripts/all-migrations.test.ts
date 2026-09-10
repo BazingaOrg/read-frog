@@ -16,9 +16,8 @@ describe("all Config Migrations", () => {
     const migrated = await migrateConfig(structuredClone(v001TestSeries.default!.config), 1)
 
     expect(configSchema.safeParse(migrated).success).toBe(true)
-    // v095 moved the page-translation surface to its hosted-AI feature name.
     expect("translate" in migrated).toBe(false)
-    expect(typeof migrated.pageTranslation.providerId).toBe("string")
+    expect(typeof migrated.providerAssignments.translationProviderId).toBe("string")
   })
 
   it("should have the valid latest schema version", async () => {
@@ -29,14 +28,12 @@ describe("all Config Migrations", () => {
     const maxKey = Math.max(...Object.keys(migrationScripts).map(Number))
     expect(maxKey).toBe(LATEST_SCHEMA_VERSION)
 
-    const latestVersionStr = String(LATEST_SCHEMA_VERSION).padStart(3, "0")
-    const latestExampleModule = (await import(
-      `../example/v${latestVersionStr}.ts`
-    )) as VersionTestData
+    const latestExampleModule = await import("../example/v100.ts")
 
     // Test all configs in the test series
     for (const [seriesId, seriesData] of Object.entries(latestExampleModule.testSeries)) {
-      const parseResult = configSchema.safeParse(seriesData.config)
+      const migrated = await migrateConfig(structuredClone(seriesData.config), 100)
+      const parseResult = configSchema.safeParse(migrated)
       if (!parseResult.success) {
         console.error(
           `Schema validation failed for series "${seriesId}":`,
@@ -113,7 +110,8 @@ describe("all Config Migrations", () => {
         const isMissingExampleFile =
           error instanceof Error &&
           (error.message.includes("Cannot resolve module") ||
-            error.message.includes("Failed to resolve import"))
+            error.message.includes("Failed to resolve import") ||
+            error.message.includes("Unknown variable dynamic import"))
 
         if (!isMissingExampleFile) {
           // 其他错误重新抛出

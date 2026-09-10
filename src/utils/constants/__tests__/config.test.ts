@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-describe("dEFAULT_CONFIG", () => {
+describe("DEFAULT_CONFIG", () => {
   const originalCrypto = globalThis.crypto
 
   afterEach(() => {
@@ -24,26 +24,13 @@ describe("dEFAULT_CONFIG", () => {
     })
     vi.resetModules()
 
-    const { createDefaultDictionaryAction, DEFAULT_CONFIG } = await import("../config")
-    const defaultDictionaryAction = createDefaultDictionaryAction()
+    const { DEFAULT_CONFIG } = await import("../config")
+    const { configSchema } = await import("@/types/config/config")
 
-    expect(defaultDictionaryAction).toEqual(
-      expect.objectContaining({
-        id: "default-dictionary",
-      }),
-    )
-    expect(defaultDictionaryAction?.outputSchema).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: "default-dictionary-term" })]),
-    )
-    expect(
-      defaultDictionaryAction?.outputSchema.every(
-        (field) => typeof field.id === "string" && field.id.length > 0,
-      ),
-    ).toBe(true)
-    expect(DEFAULT_CONFIG.selectionToolbar.customActions).toEqual([])
+    expect(configSchema.safeParse(DEFAULT_CONFIG).success).toBe(true)
   })
 
-  it("seeds default translation providers and the default LLM providers in the default providers config", async () => {
+  it("seeds the local-first provider whitelist and three-role assignments", async () => {
     const { DEFAULT_CONFIG } = await import("../config")
     const { configSchema } = await import("@/types/config/config")
 
@@ -53,44 +40,20 @@ describe("dEFAULT_CONFIG", () => {
     }
 
     expect(parseResult.success).toBe(true)
-    // Google leads deliberately: the deletion fallback takes the first usable provider in this
-    // order, and landing page translation on Microsoft is illegal in translationOnly mode
-    // (see DEFAULT_PROVIDER_CONFIG_LIST).
     expect(DEFAULT_CONFIG.providersConfig.map((provider) => provider.id)).toEqual([
       "google-translate-default",
       "microsoft-translate-default",
-      "openai-default",
-      "jalapenocloud-default",
-      "atlascloud-default",
+      "xai-default",
+      "deepseek-default",
+      "google-default",
+      "moonshotai-default",
+      "alibaba-default",
+      "openai-compatible-default",
     ])
-    expect(DEFAULT_CONFIG.pageTranslation.providerId).toBe("microsoft-translate-default")
-    expect(DEFAULT_CONFIG.selectionToolbar.features.translate.providerId).toBe(
-      "microsoft-translate-default",
-    )
-    expect(DEFAULT_CONFIG.inputTranslation.providerId).toBe("microsoft-translate-default")
-    expect(DEFAULT_CONFIG.videoSubtitles.providerId).toBe("microsoft-translate-default")
-    expect(
-      DEFAULT_CONFIG.providersConfig.find((provider) => provider.id === "jalapenocloud-default"),
-    ).toEqual(
-      expect.objectContaining({
-        model: {
-          model: "GLM-5.2",
-          isCustomModel: false,
-          customModel: null,
-        },
-      }),
-    )
-    expect(
-      DEFAULT_CONFIG.providersConfig.find((provider) => provider.id === "atlascloud-default"),
-    ).toEqual(
-      expect.objectContaining({
-        model: {
-          model: "deepseek-ai/deepseek-v4-flash",
-          isCustomModel: false,
-          customModel: null,
-        },
-      }),
-    )
+    expect(DEFAULT_CONFIG.providerAssignments).toEqual({
+      translationProviderId: "microsoft-translate-default",
+      subtitleProviderId: "microsoft-translate-default",
+    })
   })
 
   it("defaults fresh hover translation off", async () => {
@@ -118,30 +81,14 @@ describe("dEFAULT_CONFIG", () => {
     expect(result.data.language.targetCode).toBe("jpn")
   })
 
-  it("rebuilds schema-valid built-in action state for persistence", async () => {
-    const { buildFreshDefaultConfig, createDefaultDictionaryAction, DEFAULT_CONFIG } =
-      await import("../config")
+  it("rebuilds an independent schema-valid default config", async () => {
+    const { buildFreshDefaultConfig, DEFAULT_CONFIG } = await import("../config")
     const { configSchema } = await import("@/types/config/config")
 
     const config = buildFreshDefaultConfig()
 
     expect(config).not.toBe(DEFAULT_CONFIG)
-    expect(config.selectionToolbar.customActions).not.toBe(
-      DEFAULT_CONFIG.selectionToolbar.customActions,
-    )
-    expect(config.selectionToolbar.builtInActions.dictionary).toEqual({
-      enabled: true,
-      providerId: "read-frog-free-ai",
-    })
-    expect(config.selectionToolbar.customActions).toEqual([])
-    expect(createDefaultDictionaryAction()).toEqual(
-      expect.objectContaining({
-        id: "default-dictionary",
-        name: expect.any(String),
-        systemPrompt: expect.any(String),
-        prompt: expect.any(String),
-      }),
-    )
+    expect(config.providersConfig).not.toBe(DEFAULT_CONFIG.providersConfig)
     expect(configSchema.safeParse(config).success).toBe(true)
   })
 })

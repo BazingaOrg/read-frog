@@ -4,57 +4,37 @@ import { isLLMProvider, isTranslateProvider } from "@/types/config/provider"
 import { mergeWithArrayOverwrite } from "../atoms/config"
 import { getProviderConfigById } from "../config/helpers"
 
-export const FEATURE_KEYS = [
-  "pageTranslation",
-  "videoSubtitles",
-  "selectionTranslation",
-  "inputTranslation",
-  "noteSuggestion",
-] as const
-
+export const FEATURE_KEYS = ["translation", "subtitles", "vocabulary"] as const
 export type FeatureKey = (typeof FEATURE_KEYS)[number]
 
 export interface FeatureProviderDef {
-  getProviderId: (config: Config) => string
+  getProviderId: (config: Config) => string | undefined
   configPath: readonly string[]
   isProvider: (provider: string) => boolean
 }
 
 export const FEATURE_PROVIDER_DEFS = {
-  pageTranslation: {
+  translation: {
     isProvider: isTranslateProvider,
-    getProviderId: (c: Config) => c.pageTranslation.providerId,
-    configPath: ["pageTranslation", "providerId"],
+    getProviderId: (config: Config) => config.providerAssignments.translationProviderId,
+    configPath: ["providerAssignments", "translationProviderId"],
   },
-  videoSubtitles: {
+  subtitles: {
     isProvider: isTranslateProvider,
-    getProviderId: (c: Config) => c.videoSubtitles.providerId,
-    configPath: ["videoSubtitles", "providerId"],
+    getProviderId: (config: Config) => config.providerAssignments.subtitleProviderId,
+    configPath: ["providerAssignments", "subtitleProviderId"],
   },
-  selectionTranslation: {
-    isProvider: isTranslateProvider,
-    getProviderId: (c: Config) => c.selectionToolbar.features.translate.providerId,
-    configPath: ["selectionToolbar", "features", "translate", "providerId"],
-  },
-  inputTranslation: {
-    isProvider: isTranslateProvider,
-    getProviderId: (c: Config) => c.inputTranslation.providerId,
-    configPath: ["inputTranslation", "providerId"],
-  },
-  noteSuggestion: {
+  vocabulary: {
     isProvider: isLLMProvider,
-    getProviderId: (c: Config) => c.selectionToolbar.noteSuggestion.providerId,
-    configPath: ["selectionToolbar", "noteSuggestion", "providerId"],
+    getProviderId: (config: Config) => config.providerAssignments.vocabularyProviderId,
+    configPath: ["providerAssignments", "vocabularyProviderId"],
   },
 } as const satisfies Record<FeatureKey, FeatureProviderDef>
 
-/** Maps FeatureKey (with dots) to i18n-safe key (with underscores) for `options.apiProviders.featureProviders.features.*` */
 export const FEATURE_KEY_I18N_MAP = {
-  pageTranslation: "pageTranslation",
-  videoSubtitles: "videoSubtitles",
-  selectionTranslation: "selectionTranslation",
-  inputTranslation: "inputTranslation",
-  noteSuggestion: "noteSuggestion",
+  translation: "pageTranslation",
+  subtitles: "videoSubtitles",
+  vocabulary: "vocabulary",
 } as const satisfies Record<FeatureKey, string>
 
 export type FeatureLabelI18nKey =
@@ -71,11 +51,12 @@ export function getFeatureDescriptionI18nKey(featureKey: FeatureKey): FeatureDes
   return `options.apiProviders.featureProviders.descriptions.${FEATURE_KEY_I18N_MAP[featureKey]}`
 }
 
-export function resolveProviderConfig(config: Config, featureKey: FeatureKey) {
+export function resolveProviderConfig(config: Config, featureKey: FeatureKey): ProviderConfig {
   const providerConfig = resolveProviderConfigOrNull(config, featureKey)
   if (!providerConfig) {
-    const providerId = FEATURE_PROVIDER_DEFS[featureKey].getProviderId(config)
-    throw new Error(`No provider config for id "${providerId}" (feature "${featureKey}")`)
+    throw new Error(
+      `No provider config for id "${FEATURE_PROVIDER_DEFS[featureKey].getProviderId(config)}" (feature "${featureKey}")`,
+    )
   }
   return providerConfig
 }
@@ -84,38 +65,27 @@ export function resolveProviderConfigOrNull(
   config: Config,
   featureKey: FeatureKey,
 ): ProviderConfig | null {
-  const def = FEATURE_PROVIDER_DEFS[featureKey]
-  const providerId = def.getProviderId(config)
-  return getProviderConfigById(config.providersConfig, providerId) ?? null
+  const providerId = FEATURE_PROVIDER_DEFS[featureKey].getProviderId(config)
+  return providerId ? (getProviderConfigById(config.providersConfig, providerId) ?? null) : null
 }
-
-/**
- * Convert a feature→providerId mapping into a Partial<Config> using FEATURE_PROVIDER_DEFS.configPath.
- * Generic — works for any scenario that assigns provider IDs to features.
- */
 
 export function buildFeatureProviderPatch(
   assignments: Partial<Record<FeatureKey, string>>,
 ): Partial<Config> {
-  let patch: Record<string, unknown> = {}
-
-  for (const key of FEATURE_KEYS) {
-    const newId = assignments[key]
-    if (newId === undefined) continue
-
-    const def = FEATURE_PROVIDER_DEFS[key]
-
+  let patch: Partial<Config> = {}
+  for (const featureKey of FEATURE_KEYS) {
+    const providerId = assignments[featureKey]
+    if (providerId === undefined) continue
+    const path = FEATURE_PROVIDER_DEFS[featureKey].configPath
     const fragment: Record<string, unknown> = {}
-    let current: Record<string, unknown> = fragment
-    for (let i = 0; i < def.configPath.length - 1; i++) {
+    let cursor = fragment
+    for (let index = 0; index < path.length - 1; index += 1) {
       const next: Record<string, unknown> = {}
-      current[def.configPath[i]!] = next
-      current = next
+      cursor[path[index]!] = next
+      cursor = next
     }
-    current[def.configPath[def.configPath.length - 1]!] = newId
-
+    cursor[path.at(-1)!] = providerId
     patch = mergeWithArrayOverwrite(patch, fragment)
   }
-
   return patch
 }

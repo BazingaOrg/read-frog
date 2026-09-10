@@ -1,7 +1,6 @@
 import type { ComponentProps } from "react"
 import type { Theme } from "@/types/config/theme"
 import type { ProviderSelectorOption } from "@/utils/providers/provider-display"
-import { PlanBadge } from "@/components/badges/plan-badge"
 import ProviderIcon from "@/components/provider-icon"
 import {
   Select,
@@ -18,7 +17,6 @@ import {
   getProviderLogo,
   getProviderName,
   isProviderSelectorOptionDisabled,
-  isSystemProviderSelectorItem,
 } from "@/utils/providers/provider-display"
 import { useTheme } from "../providers/theme-provider"
 
@@ -49,21 +47,14 @@ interface ProviderSelectorProps {
 export function getProviderSelectorGroups(
   providers: ProviderSelectorOption[],
 ): ProviderSelectorGroup[] {
-  const builtInProviders = providers.filter(isSystemProviderSelectorItem)
-  const llmProviders = providers.filter(
-    (provider) => !isSystemProviderSelectorItem(provider) && isLLMProviderConfig(provider),
-  )
-  const pureTranslateProviders = providers.filter(
-    (provider) =>
-      !isSystemProviderSelectorItem(provider) && isPureTranslateProviderConfig(provider),
-  )
+  const llmProviders = providers.filter(isLLMProviderConfig)
+  const pureTranslateProviders = providers.filter(isPureTranslateProviderConfig)
 
   // Built-in models sit last: the user's own configured providers are the
   // primary choice, the hosted fallback the closing offer.
   const groups: ProviderSelectorGroup[] = [
     { labelKey: "translateService.llmModels", providers: llmProviders },
     { labelKey: "translateService.normalTranslator", providers: pureTranslateProviders },
-    { labelKey: "translateService.builtInModels", providers: builtInProviders },
   ]
 
   return groups.filter((group) => group.providers.length > 0)
@@ -72,14 +63,11 @@ export function getProviderSelectorGroups(
 function ProviderOptionContent({
   provider,
   theme,
-  tooltipContainer,
 }: {
-  provider: ProviderSelectorOption
+  provider: ProviderSelectorOption | null
   theme: Theme
-  tooltipContainer?: ComponentProps<typeof PlanBadge>["tooltipContainer"]
 }) {
-  const requiresUltra = isSystemProviderSelectorItem(provider) && provider.requiresUltra === true
-
+  if (!provider) return null
   return (
     <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
       <ProviderIcon
@@ -87,13 +75,6 @@ function ProviderOptionContent({
         name={getProviderName(provider)}
         size="sm"
       />
-      {requiresUltra && (
-        <PlanBadge
-          plan="ultra"
-          upgradeTooltip={i18n.t("hostedAi.ultraBadge.tooltip")}
-          tooltipContainer={tooltipContainer}
-        />
-      )}
     </div>
   )
 }
@@ -102,7 +83,7 @@ export default function ProviderSelector({
   providers,
   value,
   onChange,
-  placeholder,
+  placeholder = i18n.t("options.apiProviders.featureProviders.placeholder"),
   className,
   triggerSize = "default",
   selectContentProps,
@@ -169,16 +150,12 @@ function GroupedSelect({
         if (!provider) return
         onChange(provider.id)
       }}
-      itemToStringValue={(p) => p.id}
+      itemToStringValue={(p) => p?.id ?? ""}
     >
       <SelectTrigger className={className} size={triggerSize}>
         <SelectValue placeholder={placeholder}>
-          {(provider: ProviderSelectorOption) => (
-            <ProviderIcon
-              logo={getProviderLogo(provider, theme)}
-              name={getProviderName(provider)}
-              size="sm"
-            />
+          {(provider: ProviderSelectorOption | null) => (
+            <ProviderOptionContent provider={provider} theme={theme} />
           )}
         </SelectValue>
       </SelectTrigger>
@@ -192,11 +169,7 @@ function GroupedSelect({
                 value={provider}
                 disabled={isProviderSelectorOptionDisabled(provider)}
               >
-                <ProviderOptionContent
-                  provider={provider}
-                  theme={theme}
-                  tooltipContainer={selectContentProps?.container}
-                />
+                <ProviderOptionContent provider={provider} theme={theme} />
               </SelectItem>
             ))}
           </SelectGroup>
@@ -235,17 +208,13 @@ function UngroupedSelect({
         if (!provider) return
         onChange(provider.id)
       }}
-      itemToStringValue={(p) => p.id}
+      itemToStringValue={(p) => p?.id ?? ""}
       disabled={providers.length === 0}
     >
       <SelectTrigger className={className} size={triggerSize}>
         <SelectValue placeholder={placeholder}>
-          {(provider: ProviderSelectorOption) => (
-            <ProviderIcon
-              logo={getProviderLogo(provider, theme)}
-              name={getProviderName(provider)}
-              size="sm"
-            />
+          {(provider: ProviderSelectorOption | null) => (
+            <ProviderOptionContent provider={provider} theme={theme} />
           )}
         </SelectValue>
       </SelectTrigger>
@@ -257,11 +226,7 @@ function UngroupedSelect({
               value={provider}
               disabled={isProviderSelectorOptionDisabled(provider)}
             >
-              <ProviderOptionContent
-                provider={provider}
-                theme={theme}
-                tooltipContainer={selectContentProps?.container}
-              />
+              <ProviderOptionContent provider={provider} theme={theme} />
             </SelectItem>
           ))}
         </SelectGroup>

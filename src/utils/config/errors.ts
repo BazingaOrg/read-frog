@@ -4,3 +4,13 @@ export class ConfigVersionTooNewError extends Error {
     this.name = "ConfigVersionTooNewError"
   }
 }
+
+export class ConfigMigrationFailedError extends Error {
+  constructor(
+    message: string,
+    readonly invalidPaths: string[] = [],
+  ) {
+    super(message)
+    this.name = "ConfigMigrationFailedError"
+  }
+}

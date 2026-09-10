@@ -92,10 +92,7 @@ export const azureProviderSpecificSettingsSchema = z.strictObject({
 
 export const PROVIDER_SPECIFIC_SETTINGS_SCHEMAS: Partial<
   Record<LLMProviderTypes, ProviderSpecificSettingsSchema>
-> = {
-  azure: azureProviderSpecificSettingsSchema,
-  bedrock: bedrockProviderSpecificSettingsSchema,
-}
+> = {}
 
 export function getProviderSpecificSettingFields(
   schema: ProviderSpecificSettingsSchema,

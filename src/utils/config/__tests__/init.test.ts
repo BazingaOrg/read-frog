@@ -8,6 +8,7 @@ const getItemMock = vi.fn<(...args: any[]) => any>()
 const getMetaMock = vi.fn<(...args: any[]) => any>()
 const setItemMock = vi.fn<(...args: any[]) => any>()
 const setMetaMock = vi.fn<(...args: any[]) => any>()
+const removeItemMock = vi.fn<(...args: any[]) => any>()
 const runMigrationMock = vi.fn<(...args: any[]) => any>()
 const loggerWarnMock = vi.fn<(...args: any[]) => any>()
 
@@ -17,6 +18,7 @@ vi.mock("#imports", () => ({
     getMeta: getMetaMock,
     setItem: setItemMock,
     setMeta: setMetaMock,
+    removeItem: removeItemMock,
   },
 }))
 
@@ -26,6 +28,7 @@ vi.mock("wxt/utils/storage", () => ({
     getMeta: getMetaMock,
     setItem: setItemMock,
     setMeta: setMetaMock,
+    removeItem: removeItemMock,
   },
 }))
 
@@ -68,15 +71,14 @@ describe("initializeConfig", () => {
     vi.clearAllMocks()
     setItemMock.mockResolvedValue(undefined)
     setMetaMock.mockResolvedValue(undefined)
+    removeItemMock.mockResolvedValue(undefined)
     runMigrationMock.mockImplementation(async (_nextVersion: number, config: Config) => config)
   })
 
   function translateProviderIdsOf(config: Config) {
     return [
-      config.pageTranslation.providerId,
-      config.selectionToolbar.features.translate.providerId,
-      config.inputTranslation.providerId,
-      config.videoSubtitles.providerId,
+      config.providerAssignments.translationProviderId,
+      config.providerAssignments.subtitleProviderId,
     ]
   }
 
@@ -106,11 +108,16 @@ describe("initializeConfig", () => {
     expect(setItemMock).toHaveBeenCalledTimes(1)
     expect(setItemMock).toHaveBeenCalledWith("local:config", expect.any(Object))
     const freshConfig = setItemMock.mock.calls[0]?.[1] as Config
-    for (const providerId of ["openai-default", "jalapenocloud-default", "atlascloud-default"]) {
-      expect(freshConfig.providersConfig.find((provider) => provider.id === providerId)).toEqual(
-        expect.objectContaining({ description: expect.any(String) }),
-      )
-    }
+    expect(freshConfig.providersConfig.map((provider) => provider.id)).toEqual([
+      "google-translate-default",
+      "microsoft-translate-default",
+      "xai-default",
+      "deepseek-default",
+      "google-default",
+      "moonshotai-default",
+      "alibaba-default",
+      "openai-compatible-default",
+    ])
     expect(setMetaMock).toHaveBeenCalledTimes(1)
     expect(setMetaMock).toHaveBeenCalledWith(
       "local:config",
@@ -133,8 +140,6 @@ describe("initializeConfig", () => {
     expect(translateProviderIdsOf(freshConfig)).toEqual([
       MICROSOFT_TRANSLATE_PROVIDER_ID,
       MICROSOFT_TRANSLATE_PROVIDER_ID,
-      MICROSOFT_TRANSLATE_PROVIDER_ID,
-      MICROSOFT_TRANSLATE_PROVIDER_ID,
     ])
   })
 
@@ -152,7 +157,7 @@ describe("initializeConfig", () => {
     expect(isFreshInstall).toBe(false)
   })
 
-  it("reports recovery from an unparseable config as a fresh install so the provider probe reruns", async () => {
+  it("preserves an unparseable config and records recovery details", async () => {
     getItemMock.mockResolvedValueOnce({ not: "a config" })
     getMetaMock.mockResolvedValueOnce({
       schemaVersion: CONFIG_SCHEMA_VERSION,
@@ -160,9 +165,22 @@ describe("initializeConfig", () => {
     })
 
     const { initializeConfig } = await import("../init")
-    const { isFreshInstall } = await initializeConfig()
-
-    expect(isFreshInstall).toBe(true)
+    await expect(initializeConfig()).rejects.toMatchObject({
+      name: "ConfigMigrationFailedError",
+      invalidPaths: expect.any(Array),
+    })
+    expect(setItemMock).toHaveBeenCalledTimes(1)
+    expect(setItemMock).toHaveBeenCalledWith(
+      "local:configMigrationRecovery",
+      expect.objectContaining({
+        rawConfig: { not: "a config" },
+        sourceVersion: CONFIG_SCHEMA_VERSION,
+        targetVersion: CONFIG_SCHEMA_VERSION,
+        invalidPaths: expect.any(Array),
+      }),
+    )
+    expect(setItemMock).not.toHaveBeenCalledWith("local:config", expect.anything())
+    expect(setMetaMock).not.toHaveBeenCalled()
   })
 
   it("runs migration and persists migrated config once", async () => {
@@ -185,13 +203,47 @@ describe("initializeConfig", () => {
     await initializeConfig()
 
     expect(runMigrationMock).toHaveBeenCalledWith(CONFIG_SCHEMA_VERSION, config)
-    expect(setItemMock).toHaveBeenCalledTimes(1)
+    expect(setItemMock).toHaveBeenCalledWith(
+      "local:configMigrationRecovery",
+      expect.objectContaining({
+        rawConfig: config,
+        sourceVersion: CONFIG_SCHEMA_VERSION - 1,
+        targetVersion: CONFIG_SCHEMA_VERSION,
+      }),
+    )
     expect(setItemMock).toHaveBeenCalledWith("local:config", migrated)
     expect(setMetaMock).toHaveBeenCalledTimes(1)
     expect(setMetaMock).toHaveBeenCalledWith("local:config", {
       schemaVersion: CONFIG_SCHEMA_VERSION,
       lastModifiedAt: 888,
     })
+    expect(removeItemMock).toHaveBeenCalledWith("local:configMigrationRecovery")
+  })
+
+  it("does not advance config or meta when a migration throws", async () => {
+    const config = buildStableConfig()
+    getItemMock.mockResolvedValueOnce(config)
+    getMetaMock.mockResolvedValueOnce({
+      schemaVersion: CONFIG_SCHEMA_VERSION - 1,
+      lastModifiedAt: 456,
+    })
+    runMigrationMock.mockRejectedValueOnce(new Error("migration exploded"))
+
+    const { initializeConfig } = await import("../init")
+    await expect(initializeConfig()).rejects.toThrow("migration exploded")
+
+    expect(setItemMock).toHaveBeenCalledWith(
+      "local:configMigrationRecovery",
+      expect.objectContaining({
+        rawConfig: config,
+        sourceVersion: CONFIG_SCHEMA_VERSION - 1,
+        targetVersion: CONFIG_SCHEMA_VERSION,
+        error: "migration exploded",
+      }),
+    )
+    expect(setItemMock).not.toHaveBeenCalledWith("local:config", expect.anything())
+    expect(setMetaMock).not.toHaveBeenCalled()
+    expect(removeItemMock).not.toHaveBeenCalled()
   })
 
   it("only updates meta when config is unchanged but lastModifiedAt is missing", async () => {

@@ -10,8 +10,13 @@ import {
   CONFIG_STORAGE_KEY,
   DEFAULT_CONFIG,
 } from "../constants/config"
-import { logger } from "../logger"
+import { ConfigMigrationFailedError, ConfigVersionTooNewError } from "./errors"
 import { runMigration } from "./migration"
+import {
+  clearConfigMigrationRecovery,
+  saveConfigMigrationRecovery,
+  type ConfigMigrationRecoveryRecord,
+} from "./recovery"
 
 export interface InitializeConfigResult {
   /**
@@ -28,11 +33,11 @@ export interface InitializeConfigResult {
  */
 export async function initializeConfig(): Promise<InitializeConfigResult> {
   const [storedConfig, configMeta] = await Promise.all([
-    storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`),
+    storage.getItem<unknown>(`local:${CONFIG_STORAGE_KEY}`),
     storage.getMeta<ConfigMeta>(`local:${CONFIG_STORAGE_KEY}`),
   ])
 
-  let config: Config
+  let config: unknown
   let currentVersion: number
   let didConfigChange = false
   let isFreshInstall = false
@@ -49,36 +54,64 @@ export async function initializeConfig(): Promise<InitializeConfigResult> {
     currentVersion = configMeta?.schemaVersion ?? 1
   }
 
-  while (currentVersion < CONFIG_SCHEMA_VERSION) {
-    const nextVersion = currentVersion + 1
-    try {
+  if (currentVersion > CONFIG_SCHEMA_VERSION) {
+    throw new ConfigVersionTooNewError(
+      `Stored config version ${currentVersion} is newer than supported version ${CONFIG_SCHEMA_VERSION}`,
+    )
+  }
+
+  let recoveryRecord: ConfigMigrationRecoveryRecord | null = null
+  if (storedConfig && currentVersion < CONFIG_SCHEMA_VERSION) {
+    recoveryRecord = {
+      rawConfig: structuredClone(storedConfig),
+      sourceMeta: configMeta ?? null,
+      sourceVersion: currentVersion,
+      targetVersion: CONFIG_SCHEMA_VERSION,
+      createdAt: Date.now(),
+      invalidPaths: [],
+    }
+    await saveConfigMigrationRecovery(recoveryRecord)
+  }
+
+  try {
+    while (currentVersion < CONFIG_SCHEMA_VERSION) {
+      const nextVersion = currentVersion + 1
       config = await runMigration(nextVersion, config)
       didConfigChange = true
       currentVersion = nextVersion
-    } catch (error) {
-      console.error(`Migration to version ${nextVersion} failed:`, error)
-      currentVersion = nextVersion
     }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (recoveryRecord) {
+      await saveConfigMigrationRecovery({ ...recoveryRecord, error: message })
+    }
+    throw new ConfigMigrationFailedError(message)
   }
 
-  if (!configSchema.safeParse(config).success) {
-    logger.warn("Config is invalid, using default config")
-    await initI18n(DEFAULT_CONFIG.uiLanguage)
-    config = buildFreshDefaultConfig()
-    currentVersion = CONFIG_SCHEMA_VERSION
-    didConfigChange = true
-    // The rebuilt config is untouched defaults, so recovered users get the
-    // same one-time provider selection a genuine fresh install does.
-    isFreshInstall = true
+  const parseResult = configSchema.safeParse(config)
+  if (!parseResult.success) {
+    const invalidPaths = parseResult.error.issues.map((issue) => issue.path.join("."))
+    const message = parseResult.error.message
+    const record = recoveryRecord ?? {
+      rawConfig: structuredClone(config),
+      sourceMeta: configMeta ?? null,
+      sourceVersion: currentVersion,
+      targetVersion: CONFIG_SCHEMA_VERSION,
+      createdAt: Date.now(),
+      invalidPaths: [],
+    }
+    await saveConfigMigrationRecovery({ ...record, error: message, invalidPaths })
+    throw new ConfigMigrationFailedError(message, invalidPaths)
   }
+  let validatedConfig = parseResult.data
 
   if (import.meta.env.DEV) {
-    const apiKeyResult = applyAPIKeysFromEnv(config)
-    config = apiKeyResult.config
+    const apiKeyResult = applyAPIKeysFromEnv(validatedConfig)
+    validatedConfig = apiKeyResult.config
     didConfigChange = didConfigChange || apiKeyResult.changed
 
-    const betaResult = applyDevBetaExperience(config)
-    config = betaResult.config
+    const betaResult = applyDevBetaExperience(validatedConfig)
+    validatedConfig = betaResult.config
     didConfigChange = didConfigChange || betaResult.changed
   }
 
@@ -86,7 +119,7 @@ export async function initializeConfig(): Promise<InitializeConfigResult> {
     configMeta?.schemaVersion !== currentVersion || configMeta?.lastModifiedAt === undefined
 
   if (didConfigChange) {
-    await storage.setItem<Config>(`local:${CONFIG_STORAGE_KEY}`, config)
+    await storage.setItem<Config>(`local:${CONFIG_STORAGE_KEY}`, validatedConfig)
   }
 
   if (didConfigChange || didMetaNeedUpdate) {
@@ -94,6 +127,10 @@ export async function initializeConfig(): Promise<InitializeConfigResult> {
       schemaVersion: currentVersion,
       lastModifiedAt: configMeta?.lastModifiedAt ?? Date.now(),
     })
+  }
+
+  if (recoveryRecord) {
+    await clearConfigMigrationRecovery()
   }
 
   return { isFreshInstall }

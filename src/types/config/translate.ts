@@ -189,7 +189,6 @@ export const pageTranslationShortcutSchema = z.string().superRefine((shortcut, c
 })
 
 export const translateConfigSchema = z.object({
-  providerId: z.string().nonempty(),
   mode: translationModeSchema,
   modeShortcut: pageTranslationShortcutSchema,
   node: z.object({

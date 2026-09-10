@@ -2,8 +2,9 @@ import type { Config } from "@/types/config/config"
 import type { ConfigMeta, ConfigValueAndMeta } from "@/types/config/meta"
 import { storage } from "#imports"
 import { configSchema } from "@/types/config/config"
-import { CONFIG_SCHEMA_VERSION, CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "../constants/config"
+import { CONFIG_SCHEMA_VERSION, CONFIG_STORAGE_KEY } from "../constants/config"
 import { logger } from "../logger"
+import { ConfigMigrationFailedError } from "./errors"
 
 export async function getLocalConfig() {
   const config = await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`)
@@ -13,8 +14,9 @@ export async function getLocalConfig() {
   }
   const parsedConfig = configSchema.safeParse(config)
   if (!parsedConfig.success) {
-    logger.error("Config is invalid, using default config")
-    return DEFAULT_CONFIG
+    const invalidPaths = parsedConfig.error.issues.map((issue) => issue.path.join("."))
+    logger.error("Config is invalid", parsedConfig.error)
+    throw new ConfigMigrationFailedError(parsedConfig.error.message, invalidPaths)
   }
   return parsedConfig.data
 }

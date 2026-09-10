@@ -11,14 +11,7 @@ export function APIConfigWarning({ className }: { className?: string }) {
       )}
     >
       {i18n.t("noAPIKeyConfig.warningWithLink.youMust")}{" "}
-      <a
-        href="https://readfrog.app/docs/api-key"
-        target="_blank"
-        rel="noreferrer"
-        className="underline"
-      >
-        {i18n.t("noAPIKeyConfig.warningWithLink.setTheAPIKey")}
-      </a>{" "}
+      {i18n.t("noAPIKeyConfig.warningWithLink.setTheAPIKey")}{" "}
       {i18n.t("noAPIKeyConfig.warningWithLink.firstOnThe")}{" "}
       <button
         type="button"

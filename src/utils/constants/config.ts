@@ -1,17 +1,12 @@
 import type { Config } from "@/types/config/config"
 import type { FloatingButtonSide } from "@/types/config/floating-button"
-import type { SelectionToolbarCustomAction } from "@/types/config/selection-toolbar"
 import type { PageTranslateRange } from "@/types/config/translate"
-import { BUILT_IN_AI_PROVIDER_ID } from "@/utils/providers/provider-registry"
-import { BUILT_IN_DICTIONARY_ACTION_ID } from "./custom-action"
-import { CUSTOM_ACTION_TEMPLATES } from "./custom-action-templates"
 import {
   DEFAULT_SUBTITLE_TRANSLATE_PROMPTS_CONFIG,
   DEFAULT_TRANSLATE_PROMPTS_CONFIG,
 } from "./prompt"
 import {
   buildDefaultProviderConfigList,
-  DEFAULT_PROVIDER_CONFIG,
   DEFAULT_PROVIDER_CONFIG_LIST,
   MICROSOFT_TRANSLATE_PROVIDER_ID,
 } from "./providers"
@@ -45,37 +40,16 @@ import { TRANSLATION_NODE_STYLE_ON_INSTALLED } from "./translation-node-style"
 import { DEFAULT_TTS_CONFIG } from "./tts"
 
 export const CONFIG_STORAGE_KEY = "config"
+export const CONFIG_MIGRATION_RECOVERY_STORAGE_KEY = "configMigrationRecovery"
 export const LAST_SYNCED_CONFIG_STORAGE_KEY = "lastSyncedConfig"
 export const GOOGLE_DRIVE_TOKEN_STORAGE_KEY = "__googleDriveToken"
 
 export const THEME_STORAGE_KEY = "theme"
 export const DEFAULT_DETECTED_CODE = "eng" as const
-export const CONFIG_SCHEMA_VERSION = 100
+export const CONFIG_SCHEMA_VERSION = 101
 
 export const DEFAULT_FLOATING_BUTTON_POSITION = 0.66
 export const DEFAULT_FLOATING_BUTTON_SIDE: FloatingButtonSide = "right"
-
-/**
- * Build the code-owned Dictionary action definition in the current UI locale.
- * Only enabled/provider/Notebase state is persisted; callers merge those mutable
- * fields onto this definition at read time.
- */
-export function createDefaultDictionaryAction(): SelectionToolbarCustomAction | null {
-  const template = CUSTOM_ACTION_TEMPLATES.find((t) => t.id === "dictionary")
-  if (!template) return null
-
-  const action = template.createAction(BUILT_IN_AI_PROVIDER_ID)
-  return {
-    ...action,
-    id: BUILT_IN_DICTIONARY_ACTION_ID,
-    outputSchema: action.outputSchema.map((field) => ({
-      ...field,
-      id: field.id.startsWith("dictionary-")
-        ? `default-${field.id}`
-        : `default-dictionary-${field.id}`,
-    })),
-  }
-}
 
 export const DEFAULT_CONFIG: Config = {
   language: {
@@ -84,8 +58,11 @@ export const DEFAULT_CONFIG: Config = {
     level: "intermediate",
   },
   providersConfig: DEFAULT_PROVIDER_CONFIG_LIST,
+  providerAssignments: {
+    translationProviderId: MICROSOFT_TRANSLATE_PROVIDER_ID,
+    subtitleProviderId: MICROSOFT_TRANSLATE_PROVIDER_ID,
+  },
   pageTranslation: {
-    providerId: MICROSOFT_TRANSLATE_PROVIDER_ID,
     mode: "bilingual",
     modeShortcut: DEFAULT_TRANSLATION_MODE_SHORTCUT_KEY,
     node: {
@@ -124,9 +101,6 @@ export const DEFAULT_CONFIG: Config = {
       customCSS: null,
     },
   },
-  languageDetection: {
-    mode: "basic",
-  },
   tts: DEFAULT_TTS_CONFIG,
   floatingButton: {
     enabled: true,
@@ -143,27 +117,11 @@ export const DEFAULT_CONFIG: Config = {
     features: {
       translate: {
         enabled: true,
-        providerId: MICROSOFT_TRANSLATE_PROVIDER_ID,
         shortcut: DEFAULT_SELECTION_TRANSLATION_SHORTCUT_KEY,
       },
       speak: {
         enabled: true,
       },
-    },
-    builtInActions: {
-      dictionary: {
-        enabled: true,
-        providerId: BUILT_IN_AI_PROVIDER_ID,
-      },
-    },
-    customActions: [],
-    noteSuggestion: {
-      enabled: true,
-      actionId: BUILT_IN_DICTIONARY_ACTION_ID,
-      // Fresh installs always carry the OpenAI default provider; suggestions
-      // start working the moment the user adds their key, with no hosted plan
-      // requirement attached.
-      providerId: DEFAULT_PROVIDER_CONFIG.openai.id,
     },
   },
   sideContent: {
@@ -175,19 +133,10 @@ export const DEFAULT_CONFIG: Config = {
   contextMenu: {
     enabled: true,
   },
-  inputTranslation: {
-    enabled: true,
-    providerId: MICROSOFT_TRANSLATE_PROVIDER_ID,
-    fromLang: "targetCode",
-    toLang: "sourceCode",
-    enableCycle: false,
-    timeThreshold: 300,
-  },
   videoSubtitles: {
     enabled: true,
     autoStart: false,
     toggleShortcut: DEFAULT_SUBTITLES_TOGGLE_SHORTCUT_KEY,
-    providerId: MICROSOFT_TRANSLATE_PROVIDER_ID,
     style: {
       displayMode: DEFAULT_DISPLAY_MODE,
       translationPosition: DEFAULT_TRANSLATION_POSITION,
@@ -244,16 +193,6 @@ export function buildFreshDefaultConfig(): Config {
   return {
     ...DEFAULT_CONFIG,
     providersConfig: buildDefaultProviderConfigList(),
-    selectionToolbar: {
-      ...DEFAULT_CONFIG.selectionToolbar,
-      builtInActions: {
-        dictionary: {
-          enabled: true,
-          providerId: BUILT_IN_AI_PROVIDER_ID,
-        },
-      },
-      customActions: [],
-    },
   }
 }
 
