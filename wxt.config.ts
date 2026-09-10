@@ -10,9 +10,7 @@ import {
 } from "./src/env/shared"
 
 const WXT_API_KEY_PATTERN = /^WXT_.*API_KEY/
-const ALLOWED_BUNDLED_API_KEYS = new Set(["WXT_POSTHOG_API_KEY"])
 const useLocalPackages = isLocalPackagesEnabled(process.env)
-const shouldSkipEnvValidation = process.env.WXT_SKIP_ENV_VALIDATION === "true"
 // Root of the read-frog monorepo whose source is aliased in when developing
 // with local packages. Defaults to the sibling checkout; override with
 // WXT_MONOREPO_PATH to point at a git worktree (relative or absolute).
@@ -46,9 +44,7 @@ export default defineConfig({
       "storage",
       "tabs",
       "alarms",
-      "cookies",
       "contextMenus",
-      "identity",
       "scripting",
       "webNavigation",
       ...(browser !== "firefox" ? ["offscreen", "sidePanel"] : []),
@@ -75,10 +71,6 @@ export default defineConfig({
         gecko: {
           id: "{bd311a81-4530-4fcc-9178-74006155461b}",
           strict_min_version: "112.0",
-          data_collection_permissions: {
-            required: ["none"],
-            optional: ["technicalAndInteraction"],
-          },
         },
       },
     }),
@@ -146,16 +138,11 @@ export default defineConfig({
             {
               name: "check-api-key-env",
               buildStart() {
-                z.object(
-                  createExtensionClientEnvSchema(
-                    configEnv.mode === "production",
-                    shouldSkipEnvValidation,
-                  ),
-                ).parse(resolveExtensionEnv(process.env))
+                z.object(createExtensionClientEnvSchema()).parse(resolveExtensionEnv(process.env))
 
-                const apiKeyVars = Object.keys(process.env)
-                  .filter((key) => WXT_API_KEY_PATTERN.test(key))
-                  .filter((key) => !ALLOWED_BUNDLED_API_KEYS.has(key))
+                const apiKeyVars = Object.keys(process.env).filter((key) =>
+                  WXT_API_KEY_PATTERN.test(key),
+                )
 
                 if (apiKeyVars.length > 0) {
                   throw new Error(

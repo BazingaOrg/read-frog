@@ -98,9 +98,7 @@ export function resolveExtensionEnv(rawEnv: RawExtensionEnv) {
   }
 }
 
-export function createExtensionClientEnvSchema(isProd: boolean, skipRequiredProductionEnv = false) {
-  const requiresProductionEnv = isProd && !skipRequiredProductionEnv
-
+export function createExtensionClientEnvSchema() {
   return {
     WXT_API_URL: strictUrlSchema,
     WXT_WEBSITE_URL: strictUrlSchema,
@@ -110,9 +108,9 @@ export function createExtensionClientEnvSchema(isProd: boolean, skipRequiredProd
     WXT_AUTH_COOKIE_DOMAINS: z
       .string()
       .transform((value, ctx) => parseCommaSeparatedEntries(value, ctx, strictCookieDomainSchema)),
-    WXT_GOOGLE_CLIENT_ID: requiresProductionEnv ? z.string().min(1) : optionalNonEmptyStringSchema,
-    WXT_POSTHOG_HOST: requiresProductionEnv ? strictUrlSchema : optionalStrictUrlSchema,
-    WXT_POSTHOG_API_KEY: requiresProductionEnv ? z.string().min(1) : optionalNonEmptyStringSchema,
+    WXT_GOOGLE_CLIENT_ID: optionalNonEmptyStringSchema,
+    WXT_POSTHOG_HOST: optionalStrictUrlSchema,
+    WXT_POSTHOG_API_KEY: optionalNonEmptyStringSchema,
     WXT_POSTHOG_TEST_UUID: optionalNonEmptyStringSchema,
     WXT_ANALYTICS_DAILY_FEATURE_CACHE_ENABLED: rawBooleanSchema.default(false),
   } satisfies Record<string, z.ZodType>
