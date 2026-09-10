@@ -46,11 +46,10 @@ describe("selectionToolbarFooterContent", () => {
       provider: "google-translate",
     },
     {
-      id: "deepl-default",
-      name: "DeepL",
+      id: "microsoft-translate-default",
+      name: "Microsoft Translate",
       enabled: true,
-      provider: "deepl",
-      apiKey: "test-key",
+      provider: "microsoft-translate",
     },
   ]
 
@@ -68,7 +67,7 @@ describe("selectionToolbarFooterContent", () => {
           onProviderChange={onProviderChange}
           onRegenerate={onRegenerate}
         >
-          <button type="button">Save to Notebase</button>
+          <button type="button">Copy</button>
         </SelectionToolbarFooterContent>
       </TooltipProvider>,
     )
@@ -79,12 +78,12 @@ describe("selectionToolbarFooterContent", () => {
       await Promise.resolve()
     })
 
-    expect(onProviderChange).toHaveBeenCalledWith("deepl-default")
+    expect(onProviderChange).toHaveBeenCalledWith("microsoft-translate-default")
     expect(screen.getByText(i18n.t("action.contextDetailsTitleLabel"))).toBeInTheDocument()
     expect(screen.getByText(i18n.t("action.contextDetailsParagraphsLabel"))).toBeInTheDocument()
     expect(screen.getByText("Page Title")).toBeInTheDocument()
     expect(screen.getByText("Context text")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Save to Notebase" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument()
     const contextPreview = screen
       .getByText("Context text")
       .closest("[data-slot='selection-toolbar-footer-preview-value']")

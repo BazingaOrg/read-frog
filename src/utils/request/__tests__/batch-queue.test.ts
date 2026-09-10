@@ -49,10 +49,11 @@ const sampleLangConfig: Config["language"] = {
 const sampleProviderConfig: ProviderConfig = {
   id: "test-provider",
   name: "Test Provider",
-  provider: "openai",
+  provider: "openai-compatible",
   enabled: true,
   apiKey: "test-key",
-  model: { model: "gpt-4o-mini", isCustomModel: false, customModel: null },
+  baseURL: "https://example.com/v1",
+  model: { model: "use-custom-model", isCustomModel: true, customModel: "test-model" },
 }
 
 interface TranslateBatchData {

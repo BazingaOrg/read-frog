@@ -29,7 +29,7 @@ export async function removeOrShowNodeTranslation(point: Point, config: Config):
   if (
     !validateTranslationConfigAndToast({
       providersConfig: config.providersConfig,
-      pageTranslation: config.pageTranslation,
+      providerAssignments: config.providerAssignments,
       language: config.language,
     })
   ) {

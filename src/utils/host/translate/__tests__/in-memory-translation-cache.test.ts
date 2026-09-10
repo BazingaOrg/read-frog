@@ -39,7 +39,6 @@ async function setup() {
       text,
       langConfig,
       providerConfig: googleProviderConfig,
-      hostedFeature: "pageTranslation",
       sessionId,
       ...overrides,
     })

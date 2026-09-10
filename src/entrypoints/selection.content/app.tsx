@@ -2,13 +2,11 @@ import { useAtomValue } from "jotai"
 import { useEffect } from "react"
 import { ToastProvider } from "@/components/ui/base-ui/toast"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
-import { useInputTranslation } from "./input-translation"
 import {
   SELECTION_CONTENT_OVERLAY_LAYERS,
   SELECTION_CONTENT_OVERLAY_ROOT_ATTRIBUTE,
 } from "./overlay-layers"
 import { SelectionToolbar } from "./selection-toolbar"
-import { SelectionCustomActionProvider } from "./selection-toolbar/custom-action-button/provider"
 import { SelectionTranslationProvider } from "./selection-toolbar/translate-button/provider"
 import { useContextMenuReadAloud } from "./use-context-menu-read-aloud"
 
@@ -19,7 +17,6 @@ export default function App({
   uiContainer: HTMLElement
   portalContainer: ShadowRoot
 }) {
-  useInputTranslation()
   useContextMenuReadAloud()
   const opacity = useAtomValue(configFieldsAtomMap.selectionToolbar).opacity / 100
 
@@ -40,9 +37,7 @@ export default function App({
       }}
     >
       <SelectionTranslationProvider>
-        <SelectionCustomActionProvider>
-          <SelectionToolbar />
-        </SelectionCustomActionProvider>
+        <SelectionToolbar />
       </SelectionTranslationProvider>
     </ToastProvider>
   )

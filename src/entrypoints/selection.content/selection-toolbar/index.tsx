@@ -16,7 +16,6 @@ import {
   EXTERNAL_SELECTION_OPEN_EVENT,
   MARGIN,
 } from "@/utils/constants/selection"
-import { getSelectionToolbarActions } from "@/utils/custom-actions"
 import { cn } from "@/utils/styles/utils"
 import { matchDomainPattern } from "@/utils/url"
 import { buildContextSnapshot, readSelectionSnapshot } from "../utils"
@@ -26,7 +25,6 @@ import {
   setSelectionStateAtom,
 } from "./atoms"
 import { CloseButton, DropEvent } from "./close-button"
-import { SelectionToolbarCustomActionButtons } from "./custom-action-button"
 import { createModalDialogHostController } from "./modal-dialog-host"
 import {
   collectSelectionScrollTargets,
@@ -568,10 +566,7 @@ export function SelectionToolbar() {
   )
 
   const { features } = selectionToolbar
-  const hasAnyEnabledFeature =
-    features.translate.enabled ||
-    features.speak.enabled ||
-    getSelectionToolbarActions(selectionToolbar).some((action) => action.enabled !== false)
+  const hasAnyEnabledFeature = features.translate.enabled || features.speak.enabled
 
   return (
     <div
@@ -598,7 +593,6 @@ export function SelectionToolbar() {
             <div className="no-scrollbar flex max-w-105 items-center overflow-x-auto overflow-y-hidden rounded-sm">
               {features.translate.enabled && <TranslateButton />}
               {features.speak.enabled && <SpeakButton />}
-              <SelectionToolbarCustomActionButtons />
             </div>
             <CloseButton />
           </div>

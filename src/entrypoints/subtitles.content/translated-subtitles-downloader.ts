@@ -171,7 +171,7 @@ export class TranslatedSubtitlesDownloader {
   ): Promise<SubtitlesFragment[]> {
     // One resolve for the whole export: segmentation runs per 60s chunk, and a
     // hosted ref would otherwise pay a hostedAi.status round trip per chunk.
-    const providerRef = await resolveSubtitlesProviderRef(config, "videoSubtitles")
+    const providerRef = await resolveSubtitlesProviderRef(config)
     this.assertActive(operationId)
     const fragments = await this.buildExportProcessedSubtitles(
       sourceSubtitles,

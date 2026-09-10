@@ -5,11 +5,7 @@ import { toastManager } from "@/components/ui/base-ui/toast"
 import { ANALYTICS_FEATURE, ANALYTICS_SURFACE } from "@/types/analytics"
 import { isLLMProviderConfig } from "@/types/config/provider"
 import { createFeatureUsageContext, trackFeatureUsed } from "@/utils/analytics"
-import {
-  BUILT_IN_AI_FEATURE_PROVIDER,
-  classifyProviderConfig,
-  UNKNOWN_FEATURE_PROVIDER,
-} from "@/utils/analytics-provider"
+import { classifyProviderConfig, UNKNOWN_FEATURE_PROVIDER } from "@/utils/analytics-provider"
 import { getLocalConfig } from "@/utils/config/storage"
 import {
   CONTENT_WRAPPER_CLASS,
@@ -63,7 +59,6 @@ import { logger } from "@/utils/logger"
 import { sendMessage } from "@/utils/message"
 import {
   checkProviderAvailability,
-  isSystemProviderRef,
   resolvePageTranslationProvider,
   resolvePageTranslationProviderOrNull,
 } from "@/utils/providers/provider-ref"
@@ -227,15 +222,12 @@ export class PageTranslationManager implements IPageTranslationManager {
     }
 
     const requestedProviderConfig = resolvePageTranslationProviderOrNull(config)
-    const providerAnalytics =
-      requestedProviderConfig && isSystemProviderRef(requestedProviderConfig)
-        ? BUILT_IN_AI_FEATURE_PROVIDER
-        : classifyProviderConfig(requestedProviderConfig)
+    const providerAnalytics = classifyProviderConfig(requestedProviderConfig)
 
     if (
       !validateTranslationConfigAndToast({
         providersConfig: config.providersConfig,
-        pageTranslation: config.pageTranslation,
+        providerAssignments: config.providerAssignments,
         language: config.language,
       })
     ) {
@@ -253,7 +245,7 @@ export class PageTranslationManager implements IPageTranslationManager {
     // explicit guard for type-safety and for malformed storage snapshots.
     if (!requestedProviderConfig) return
 
-    const availability = await checkProviderAvailability(requestedProviderConfig, "pageTranslation")
+    const availability = await checkProviderAvailability(requestedProviderConfig)
     if (this.pendingStart !== startToken) {
       return
     }
@@ -314,8 +306,7 @@ export class PageTranslationManager implements IPageTranslationManager {
       // into the first translation call, where it blocks the first visible
       // paragraph and janks the main thread on a long page.
       await this.primeDocumentTitleContext(
-        config.pageTranslation.enableAIContentAware &&
-          (isSystemProviderRef(providerConfig) || isLLMProviderConfig(providerConfig)),
+        config.pageTranslation.enableAIContentAware && isLLMProviderConfig(providerConfig),
       )
       if (this.translationSessionVersion !== sessionVersion) {
         return

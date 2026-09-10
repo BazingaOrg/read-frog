@@ -614,9 +614,9 @@ export class UniversalVideoAdapter implements SubtitlesProvidersAdapter {
       providerAnalytics = classifyResolvedProvider(
         analyticsConfig
           ? resolveProviderRefForCapability(
-              "videoSubtitles",
+              "subtitles",
               analyticsConfig.providersConfig,
-              analyticsConfig.videoSubtitles.providerId,
+              analyticsConfig.providerAssignments.subtitleProviderId,
             )
           : null,
       )
@@ -777,7 +777,7 @@ export class UniversalVideoAdapter implements SubtitlesProvidersAdapter {
     // Resolved once per session; the cache key needs the same identity the
     // background will use, and a hosted ref costs one status fetch here rather
     // than one per fragment.
-    const providerRef = config ? await resolveSubtitlesProviderRef(config, "videoSubtitles") : null
+    const providerRef = config ? await resolveSubtitlesProviderRef(config) : null
 
     const videoContext: SubtitlesVideoContext = {
       videoTitle: document.title || "",

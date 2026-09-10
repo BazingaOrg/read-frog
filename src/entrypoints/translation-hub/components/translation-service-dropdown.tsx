@@ -18,7 +18,6 @@ import {
   filterEnabledProvidersConfig,
   getLLMProvidersConfig,
   getNonAPIProvidersConfig,
-  getPureAPIProvidersConfig,
   getTranslateProvidersConfig,
 } from "@/utils/config/helpers"
 import { PROVIDER_ITEMS } from "@/utils/constants/providers"
@@ -44,7 +43,6 @@ export function TranslationServiceDropdown() {
 
   const llmProviders = getLLMProvidersConfig(filteredProvidersConfig)
   const nonAPIProviders = getNonAPIProvidersConfig(filteredProvidersConfig)
-  const pureAPIProviders = getPureAPIProvidersConfig(filteredProvidersConfig)
 
   return (
     <div className="flex items-center gap-2">
@@ -76,15 +74,10 @@ export function TranslationServiceDropdown() {
               ))}
             </SelectGroup>
           )}
-          {(nonAPIProviders.length > 0 || pureAPIProviders.length > 0) && (
+          {nonAPIProviders.length > 0 && (
             <SelectGroup>
               <SelectLabel>{i18n.t("translateService.normalTranslator")}</SelectLabel>
               {nonAPIProviders.map(({ id, name, provider }) => (
-                <SelectItem key={id} value={id}>
-                  <ProviderIcon logo={PROVIDER_ITEMS[provider].logo(theme)} name={name} size="sm" />
-                </SelectItem>
-              ))}
-              {pureAPIProviders.map(({ id, name, provider }) => (
                 <SelectItem key={id} value={id}>
                   <ProviderIcon logo={PROVIDER_ITEMS[provider].logo(theme)} name={name} size="sm" />
                 </SelectItem>

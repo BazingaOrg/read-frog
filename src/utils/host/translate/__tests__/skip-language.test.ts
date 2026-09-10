@@ -76,7 +76,6 @@ describe("shouldSkipByLanguage", () => {
       // translation and subtitles.
       expect(mockedDetect).toHaveBeenCalledWith(japaneseText, {
         minLength: MIN_LENGTH_FOR_SKIP_LANGUAGE_DETECTION,
-        enableLLM: false,
       })
       expect(result).toBe(true)
     })

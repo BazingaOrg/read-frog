@@ -1,4 +1,3 @@
-import type { HostedAiTextStreamRoute } from "@/types/background-stream"
 import type { SerializableProviderRef } from "@/utils/providers/provider-ref"
 import { logger } from "@/utils/logger"
 import { getArticleSummaryPrompt } from "@/utils/prompts/summary"
@@ -10,23 +9,16 @@ const MAX_TITLE_LENGTH = 200
 
 /**
  * Generate a brief summary of article content for translation context.
- *
- * Runs on either provider kind: `generateTextForProviderRef` picks the local
- * `generateText` call or the hosted stream. The same function serves the page
- * summary and the video summary, which is why the hosted feature is a
- * parameter rather than a constant.
  */
 export async function generateArticleSummary(
   title: string,
   textContent: string,
   providerRef: SerializableProviderRef,
   options: {
-    hostedFeature: HostedAiTextStreamRoute
     signal?: AbortSignal
     generate: (
       payload: {
         providerRef: SerializableProviderRef
-        hostedFeature: HostedAiTextStreamRoute
         instructions: string
         prompt: string
       },
@@ -49,7 +41,6 @@ export async function generateArticleSummary(
     const summary = await options.generate(
       {
         providerRef,
-        hostedFeature: options.hostedFeature,
         instructions: systemPrompt,
         prompt,
       },
